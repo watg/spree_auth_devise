@@ -22,8 +22,10 @@ Spree::Core::Engine.routes.draw do
     put '/password/change' => 'user_passwords#update', :as => :update_password
   end
 
-  get '/checkout/registration' => 'checkout#registration', :as => :checkout_registration
-  put '/checkout/registration' => 'checkout#update_registration', :as => :update_checkout_registration
+  # added to spree/frontend/config/routes due to override issue
+  
+  # get '/checkout/registration' => 'checkout#registration', :as => :checkout_registration
+  # put '/checkout/registration' => 'checkout#update_registration', :as => :update_checkout_registration
 
   resource :session do
     member do
