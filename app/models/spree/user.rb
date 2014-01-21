@@ -11,6 +11,9 @@ module Spree
 
     before_validation :set_login
     before_destroy :check_completed_orders
+    before_validation(on: :create) do
+      self.uuid = Spree::User.generate_token(:uuid) if attribute_present?(:uuid) 
+    end
 
     # Setup accessible (or protected) attributes for your model
     # attr_accessible :email, :password, :password_confirmation, :remember_me, :persistence_token, :login
