@@ -8,13 +8,14 @@ class Spree::UserSessionsController < Devise::SessionsController
   include Spree::Core::ControllerHelpers::Common
   include Spree::Core::ControllerHelpers::Order
   include Spree::Core::ControllerHelpers::SSL
+  include Spree::Core::ControllerHelpers::Analytics
 
   ssl_required :new, :create, :destroy, :update
   ssl_allowed :login_bar
 
   def create
     authenticate_spree_user!
-
+    set_tracking_cookie(spree_current_user)
     if spree_user_signed_in?
       respond_to do |format|
         format.html {
@@ -30,6 +31,11 @@ class Spree::UserSessionsController < Devise::SessionsController
       flash.now[:error] = t('devise.failure.invalid')
       render :new
     end
+  end
+
+  def destroy
+    delete_tracking_cookie
+    super
   end
 
   def nav_bar
