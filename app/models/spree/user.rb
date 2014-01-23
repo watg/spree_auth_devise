@@ -3,7 +3,7 @@ module Spree
     include Core::UserBanners
 
     devise :database_authenticatable, :token_authenticatable, :registerable, :recoverable,
-           :rememberable, :trackable, :validatable, :encryptable, :encryptor => 'authlogic_sha512'
+           :rememberable, :trackable, :encryptable, :encryptor => 'authlogic_sha512'
 
     has_many :orders
     belongs_to :ship_address, :foreign_key => 'ship_address_id', :class_name => 'Spree::Address'
@@ -15,6 +15,15 @@ module Spree
       self.uuid ||= Spree::User.generate_token(:uuid) if self.respond_to?(:uuid)
     end
 
+    validates :uuid, uniqueness: true
+    validates_presence_of   :email, :if => :email_required?
+    validates_uniqueness_of :email, :allow_blank => true,  scope: :enrolled, :if => :email_changed?
+    validates_format_of     :email, :with  => Devise.email_regexp, :allow_blank => true, :if => :email_changed?
+    
+    validates_presence_of     :password, :if => :password_required?
+    validates_confirmation_of :password, :if => :password_required?
+    validates_length_of       :password, :within => Devise.password_length, :allow_blank => true
+
     # Setup accessible (or protected) attributes for your model
     # attr_accessible :email, :password, :password_confirmation, :remember_me, :persistence_token, :login
 
@@ -23,19 +32,29 @@ module Spree
 
     scope :admin, lambda { includes(:spree_roles).where("#{roles_table_name}.name" => "admin") }
     scope :registered, -> { where("#{users_table_name}.email NOT LIKE ?", "%@example.net") }
+    scope :not_enrolled, -> { where(enrolled: false) }
 
     class DestroyWithOrdersError < StandardError; end
 
-    # Creates an anonymous user.  An anonymous user is basically an auto-generated +User+ account that is created for the customer
-    # behind the scenes and its completely transparently to the customer.  All +Orders+ must have a +User+ so this is necessary
-    # when adding to the "cart" (which is really an order) and before the customer has a chance to provide an email or to register.
-    def self.anonymous!
-      token = User.generate_token(:persistence_token)
-      User.create(:email => "#{token}@example.net", :password => token, :password_confirmation => token, :persistence_token => token)
-    end
+    class << self
+      # Creates an anonymous user.  An anonymous user is basically an auto-generated +User+ account that is created for the customer
+      # behind the scenes and its completely transparently to the customer.  All +Orders+ must have a +User+ so this is necessary
+      # when adding to the "cart" (which is really an order) and before the customer has a chance to provide an email or to register.
+      def anonymous!
+        token = User.generate_token(:persistence_token)
+        User.create(:email => "#{token}@example.net", :password => token, :password_confirmation => token, :persistence_token => token)
+      end
+      
+      def admin_created?
+        User.admin.count > 0
+      end
 
-    def self.admin_created?
-      User.admin.count > 0
+      def create_unenrolled(opts={})
+        salt = generate_token(:password_salt)
+        u = new(email: opts[:email], uuid: opts[:uuid], enrolled: false, password_salt: salt)
+        u.save
+        u
+      end
     end
 
     def admin?
@@ -53,9 +72,16 @@ module Spree
 
     protected
       def password_required?
-        !persisted? || password.present? || password_confirmation.present?
+        if self.enrolled
+          !persisted? || password.present? || password_confirmation.present?
+        else
+          false
+        end
       end
 
+      def email_required?
+        true
+      end
     private
 
       def check_completed_orders
