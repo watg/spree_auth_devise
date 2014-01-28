@@ -14,6 +14,7 @@ Spree::CheckoutController.class_eval do
     # hack - temporarily change the state to something other than cart so we can validate the order email address
     current_order.state = current_order.checkout_steps.first
     @user = find_or_create_user(params[:order][:email])
+    set_tracking_cookie(@user)
     if current_order.update_attributes(order_params)
       redirect_to checkout_path
     else
