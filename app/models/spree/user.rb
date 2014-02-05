@@ -12,7 +12,7 @@ module Spree
     before_validation :set_login
     before_destroy :check_completed_orders
     before_validation do
-      self.uuid ||= Spree::User.generate_token(:uuid) if self.respond_to?(:uuid)
+      self.uuid ||= UUID.generate if self.respond_to?(:uuid)
     end
 
     validates :uuid, uniqueness: true
