@@ -30,9 +30,12 @@ Spree::CheckoutController.class_eval do
 
   private
   def find_or_create_user(email)
-    _user  = Spree::User.find_by_email(email)
-    if _user.blank?
-      _user = Spree::User.create_unenrolled(email: email, uuid: tracking_cookie)
+    _user = nil
+    Spree::User.transaction do
+      _user  = Spree::User.find_by_email(email)
+      if _user.blank?
+        _user = Spree::User.create_unenrolled(email: email, uuid: tracking_cookie)
+      end
     end
     _user
   end
