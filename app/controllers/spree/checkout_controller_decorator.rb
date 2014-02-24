@@ -17,7 +17,7 @@ Spree::CheckoutController.class_eval do
     # Run validations, then check for errors
     # valid? may return false if the address state validations are present
     current_order.valid?
-    @user = find_or_create_user(params[:order][:email])
+    @user = Spree::User.find_or_create_unenrolled(params[:order][:email], tracking_cookie)
     set_tracking_cookie(@user)
     if current_order.errors[:email].blank?
       redirect_to checkout_path
@@ -29,13 +29,6 @@ Spree::CheckoutController.class_eval do
   end
 
   private
-  def find_or_create_user(email)
-    _user  = Spree::User.find_by_email(email)
-    if _user.blank?
-      _user = Spree::User.create_unenrolled(email: email, uuid: tracking_cookie)
-    end
-    _user
-  end
 
     def order_params
       if params[:order]

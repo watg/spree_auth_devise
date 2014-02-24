@@ -47,14 +47,8 @@ module Spree
         User.admin.count > 0
       end
 
-      def create_unenrolled(opts={})
-        salt = generate_token(:password_salt)
-        u = new(email: opts[:email], uuid: opts[:uuid], enrolled: false, password_salt: salt)
-        u.save
-        u
-      end
     end
-
+    
     def admin?
       has_spree_role?('admin')
     end
