@@ -64,11 +64,7 @@ module Spree
 
     protected
       def password_required?
-        if self.enrolled
-          !persisted? || password.present? || password_confirmation.present?
-        else
-          false
-        end
+        !persisted? || password.present? || password_confirmation.present?
       end
 
       def email_required?

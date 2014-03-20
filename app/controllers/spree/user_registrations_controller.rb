@@ -22,9 +22,24 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
 
   # POST /resource/sign_up
   def create
+    @user = build_resource(spree_user_params)
+    if resource.save
+      set_flash_message(:notice, :signed_up)
+      sign_in(:spree_user, @user)
+      session[:spree_user_signup] = true
+      associate_user
+      sign_in_and_redirect(:spree_user, @user)
+    else
+      clean_up_passwords(resource)
+      render :new
+    end
+  end
+
+  # POST /resource/sign_up
+  def create
     @user = Spree::User.where(email: params[:spree_user][:email], enrolled: false).first
     if @user
-      @user.attributes = spree_user_params
+      @user.assign_attributes(spree_user_params)
     else
       @user = build_resource(spree_user_params)
     end
@@ -37,6 +52,8 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
       associate_user
       sign_in_and_redirect(:spree_user, @user)
     else
+      @user = build_resource(spree_user_params)
+      @user.valid?
       clean_up_passwords(@user)
       render :new
     end
@@ -73,6 +90,8 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
 
   private
     def spree_user_params
+      # if the user is subscribed to the newsletter, don't insubscribe them
+      params[:spree_user].delete(:subscribed) if params[:spree_user][:subscribed] == "0"
       params.require(:spree_user).permit(:email, :password, :password_confirmation, :subscribed)
     end
 end
