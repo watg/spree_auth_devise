@@ -9,7 +9,7 @@ Spree::CheckoutController.class_eval do
 
   def update_registration
     current_order.update_column(:email, params[:order][:email])
-    @user = find_or_create_user(params[:order][:email])
+    @user = Spree::User.find_or_create_unenrolled(params[:order][:email], tracking_cookie)
     set_tracking_cookie(@user)
     if EmailValidator.new(:attributes => current_order.attributes).valid?(current_order.email)
       redirect_to checkout_path
@@ -20,14 +20,6 @@ Spree::CheckoutController.class_eval do
   end
 
   private
-  def find_or_create_user(email)
-    _user  = Spree::User.find_by_email(email)
-    if _user.blank?
-      _user = Spree::User.create_unenrolled(email: email, uuid: tracking_cookie)
-    end
-    _user
-  end
-
   def order_params
     if params[:order]
       params.require(:order).permit(:email).merge(user_id: @user.id, created_by_id: @user.id)
