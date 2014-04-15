@@ -12,6 +12,9 @@ module Spree
 
     before_validation :set_login
     before_destroy :check_completed_orders
+    before_validation(on: :create) do
+      self.uuid = Spree::User.generate_token(:uuid) if attribute_present?(:uuid) 
+    end
 
     users_table_name = User.table_name
     roles_table_name = Role.table_name
