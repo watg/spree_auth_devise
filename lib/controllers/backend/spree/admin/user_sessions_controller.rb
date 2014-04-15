@@ -13,7 +13,6 @@ class Spree::Admin::UserSessionsController < Devise::SessionsController
 
   def create
     authenticate_spree_user!
-
     if spree_user_signed_in?
       respond_to do |format|
         format.html {
@@ -35,12 +34,12 @@ class Spree::Admin::UserSessionsController < Devise::SessionsController
   end
 
   private
-    def accurate_title
-      Spree.t(:login)
-    end
+  def accurate_title
+    Spree.t(:login)
+  end
 
-    def redirect_back_or_default(default)
-      redirect_to(session["spree_user_return_to"] || default)
-      session["spree_user_return_to"] = nil
-    end
+  def redirect_back_or_default(default)
+    redirect_to(session["spree_user_return_to"] || default)
+    session["spree_user_return_to"] = nil
+  end
 end
