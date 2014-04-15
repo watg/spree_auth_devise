@@ -9,11 +9,12 @@ Spree::CheckoutController.class_eval do
 
   def update_registration
     current_order.update_column(:email, params[:order][:email])
+    @user = find_or_create_user(params[:order][:email])
+    set_tracking_cookie(@user)
     if EmailValidator.new(:attributes => current_order.attributes).valid?(current_order.email)
       redirect_to checkout_path
     else
       flash[:registration_error] = t(:email_is_invalid, :scope => [:errors, :messages])
-      @user = Spree::User.new
       render 'registration'
     end
   end
