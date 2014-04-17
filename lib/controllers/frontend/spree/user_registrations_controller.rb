@@ -29,7 +29,7 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
     else
       @user = build_resource(spree_user_params)
     end
-    if@user.save
+    if @user.save
       @user.update_column(:enrolled, true)
       @user.subscribe("Website - Registration") if @user.subscribed?
       set_flash_message(:notice, :signed_up)
