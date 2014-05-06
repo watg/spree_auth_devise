@@ -35,6 +35,9 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
       sign_in(:spree_user, @user)
       session[:spree_user_signup] = true
       associate_user
+      if params[:return_to]
+        store_location_for(:spree_user, params[:return_to])
+      end
       sign_in_and_redirect(:spree_user, @user)
     else
       @user = build_resource(spree_user_params)
