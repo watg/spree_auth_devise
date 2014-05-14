@@ -10,7 +10,7 @@
 <div data-hook="account_summary" class="account-summary small-6 columns">
   <dl id="user-info">
     <dt>Rewards</dt>
-    <dd><%= link_to 'Refer your friends', '/referral' %></dd>
+    <dd><%= link_to 'Refer your friends', spree.referral_path(id: @user.uuid) %></dd>
   </dl>
 </div>
 

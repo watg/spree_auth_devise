@@ -22,7 +22,12 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
 
   # POST /resource/sign_up
   def create
-
+    if params[:return_to]
+      template = 'referral/get_your_discount'
+    else
+      template = :new
+    end
+    
     @user = Spree::User.where(email: params[:spree_user][:email], enrolled: false).first
     if @user
       @user.attributes = spree_user_params
@@ -35,15 +40,13 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
       sign_in(:spree_user, @user)
       session[:spree_user_signup] = true
       associate_user
-      if params[:return_to]
-        store_location_for(:spree_user, params[:return_to])
-      end
+      store_location_for(:spree_user, spree.referral_path(id: @user.uuid, w: @user.created_at.to_i)) if params[:return_to]
       sign_in_and_redirect(:spree_user, @user)
     else
       @user = build_resource(spree_user_params)
       @user.valid?
       clean_up_passwords(@user)
-      render :new
+      render template
     end
   end
 
