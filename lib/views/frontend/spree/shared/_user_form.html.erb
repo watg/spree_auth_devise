@@ -1,6 +1,7 @@
 <p>
   <%= f.label :email, Spree.t(:email) %><br />
   <%= f.email_field :email, :class => 'title' %>
+  <%= f.hidden_field :referrer_id %>
 </p>
 <div id="password-credentials">
   <p>

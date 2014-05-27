@@ -23,7 +23,7 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
   # POST /resource/sign_up
   def create
     if params[:return_to]
-      template = 'referral/get_your_discount'
+      template = 'spree/referral/get_your_discount'
     else
       template = :new
     end
@@ -83,6 +83,6 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
     def spree_user_params
       # if the user is subscribed to the newsletter, don't unsubscribe them
       params[:spree_user].delete(:subscribed) if params[:spree_user][:subscribed] == "0"
-      params.require(:spree_user).permit(Spree::PermittedAttributes.user_attributes)
+      params.require(:spree_user).permit((Spree::PermittedAttributes.user_attributes << :referrer_id))
     end
 end
