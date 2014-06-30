@@ -31,16 +31,32 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
     end
     if @user.save
       @user.update_column(:enrolled, true)
-      set_flash_message(:notice, :signed_up)
       sign_in(:spree_user, @user)
       session[:spree_user_signup] = true
       associate_user
-      sign_in_and_redirect(:spree_user, @user)
+
+      respond_to do |format|
+        format.html {
+          set_flash_message(:notice, :signed_up)
+          sign_in_and_redirect(:spree_user, @user)
+        }
+        format.js {
+          render :json => {:user => spree_current_user}
+        }
+      end
+
     else
       @user = build_resource(spree_user_params)
       @user.valid?
       clean_up_passwords(@user)
-      render :new
+      respond_to do |format|
+        format.html {
+          render :new
+        }
+        format.js {
+          render :json => { error: @user.errors }
+        }
+      end
     end
   end
 
