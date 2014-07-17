@@ -32,7 +32,7 @@ Spree::Core::Engine.add_routes do
     end
   end
 
-  resource :account, :controller => 'users'
+  resource :account, :controller => 'users', :only => [:edit, :update]
 
   namespace :admin do
     devise_for :spree_user,
