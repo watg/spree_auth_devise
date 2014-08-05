@@ -13,7 +13,11 @@ class Spree::UserSessionsController < Devise::SessionsController
   ssl_required :new, :create, :destroy, :update
   ssl_allowed :login_bar
 
+
   def create
+    # We do not want to persist the login_email after the person has signed up
+    session[:login_email] = nil
+
     authenticate_spree_user!
     set_tracking_cookie(spree_current_user)
 

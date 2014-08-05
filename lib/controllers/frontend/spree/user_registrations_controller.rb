@@ -22,6 +22,8 @@ class Spree::UserRegistrationsController < Devise::RegistrationsController
 
   # POST /resource/sign_up
   def create
+    # We do not want to persist the login_email after the person has signed up
+    session[:login_email] = nil
 
     @user = Spree::User.where(email: params[:spree_user][:email], enrolled: false).first
     if @user
