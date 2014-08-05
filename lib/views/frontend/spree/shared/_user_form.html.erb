@@ -1,6 +1,6 @@
 <p>
   <%= f.label :email, Spree.t(:email) %><br />
-  <%= f.email_field :email, :class => 'title' %>
+  <%= f.email_field :email, :class => 'title', :value => session[:login_email] %>
 </p>
 <div id="password-credentials">
   <p>
