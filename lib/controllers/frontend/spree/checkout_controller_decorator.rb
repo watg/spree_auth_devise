@@ -8,46 +8,40 @@ Spree::CheckoutController.class_eval do
   end
 
   def update_registration
-    current_order.update_column(:email, params[:order][:email])
-    @user = Spree::User.find_or_create_unenrolled(params[:order][:email], tracking_cookie)
-    set_tracking_cookie(@user)
-    if EmailValidator.new(:attributes => current_order.attributes).valid?(current_order.email)
-      redirect_to checkout_path
+    if params[:order][:email] =~ Devise.email_regexp && current_order.update_attribute(:email, params[:order][:email])
+      redirect_to spree.checkout_path
     else
       flash[:registration_error] = t(:email_is_invalid, :scope => [:errors, :messages])
+      @user = Spree::User.new
       render 'registration'
     end
   end
 
   private
-  def order_params
-    if params[:order]
-      params.require(:order).permit(:email).merge(user_id: @user.id, created_by_id: @user.id)
-    else
-      {}
+    def order_params
+      params[:order] ? params.require(:order).permit(:email) : {}
     end
-  end
 
-  def skip_state_validation?
-    %w(registration update_registration).include?(params[:action])
-  end
+    def skip_state_validation?
+      %w(registration update_registration).include?(params[:action])
+    end
 
-  def check_authorization
-    authorize!(:edit, current_order, session[:access_token])
-  end
+    def check_authorization
+      authorize!(:edit, current_order, cookies.signed[:guest_token])
+    end
 
-  # Introduces a registration step whenever the +registration_step+ preference is true.
-  def check_registration
-    return unless Spree::Auth::Config[:registration_step]
-    return if spree_current_user or current_order.email
-    store_location
-    redirect_to spree.checkout_registration_path
-  end
+    # Introduces a registration step whenever the +registration_step+ preference is true.
+    def check_registration
+      return unless Spree::Auth::Config[:registration_step]
+      return if spree_current_user or current_order.email
+      store_location
+      redirect_to spree.checkout_registration_path
+    end
 
-  # Overrides the equivalent method defined in Spree::Core.  This variation of the method will ensure that users
-  # are redirected to the tokenized order url unless authenticated as a registered user.
-  def completion_route
-    return order_path(@order) if spree_current_user
-    spree.token_order_path(@order, @order.token)
-  end
+    # Overrides the equivalent method defined in Spree::Core.  This variation of the method will ensure that users
+    # are redirected to the tokenized order url unless authenticated as a registered user.
+    def completion_route
+      return spree.order_path(@order) if spree_current_user
+      spree.token_order_path(@order, @order.guest_token)
+    end
 end

@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-feature 'Orders', js: true, focus: true do
+RSpec.feature 'Orders', :js, type: :feature do
 
   scenario 'allow a user to view their cart at any time' do
     visit spree.cart_path
@@ -9,7 +7,7 @@ feature 'Orders', js: true, focus: true do
 
   # regression test for spree/spree#1687
   scenario 'merge incomplete orders from different sessions' do
-    pending %{
+    skip %{
       TODO: has been broken for ~2 months as of:
       https://github.com/spree/spree_auth_devise/commit/3157b47b22c559817d34ec34024587d8aa6136dc
       I dont think we can decode these sessions anymore since Rails 4 switched to encrypted cookies I believe devise stores session encrypted.
@@ -45,7 +43,7 @@ feature 'Orders', js: true, focus: true do
       fill_in 'Password', with: user.password
       click_button 'Login'
 
-      # order should have been merged with first session
+      # Order should have been merged with first session
       click_link 'Cart'
       expect(page).to have_text 'RoR Mug'
       expect(page).to have_text 'RoR Shirt'
@@ -56,7 +54,7 @@ feature 'Orders', js: true, focus: true do
 
       click_link 'Cart'
 
-      # order should have been merged with second session
+      # Order should have been merged with second session
       expect(page).to have_text 'RoR Mug'
       expect(page).to have_text 'RoR Shirt'
     end

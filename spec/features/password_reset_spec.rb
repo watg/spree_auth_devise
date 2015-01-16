@@ -1,6 +1,7 @@
-require 'spec_helper'
+RSpec.feature 'Reset Password', type: :feature do
 
-feature 'Reset Password' do
+  let!(:store) { create(:store) }
+
   background do
     ActionMailer::Base.default_url_options[:host] = 'http://example.com'
   end

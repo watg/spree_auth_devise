@@ -8,18 +8,13 @@ class Spree::UserSessionsController < Devise::SessionsController
   include Spree::Core::ControllerHelpers::Common
   include Spree::Core::ControllerHelpers::Order
   include Spree::Core::ControllerHelpers::SSL
-  include Spree::Core::ControllerHelpers::Analytics
+  include Spree::Core::ControllerHelpers::Store
 
   ssl_required :new, :create, :destroy, :update
   ssl_allowed :login_bar
 
-
   def create
-    # We do not want to persist the login_email after the person has signed up
-    session[:login_email] = nil
-
     authenticate_spree_user!
-    set_tracking_cookie(spree_current_user)
 
     if spree_user_signed_in?
       respond_to do |format|
@@ -44,15 +39,6 @@ class Spree::UserSessionsController < Devise::SessionsController
         }
       end
     end
-  end
-
-  def nav_bar
-    render :partial => 'spree/shared/nav_bar'
-  end
-
-  def destroy
-    delete_tracking_cookie
-    super
   end
 
   private

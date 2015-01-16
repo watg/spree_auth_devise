@@ -7,7 +7,7 @@ Provides authentication services for Spree, using the Devise gem.
 
 ## Installation
 
-At one stage in the past, this used to be the auth component for Spree. If that's the feature that you're now finding lacking from Spree, that's easy fixed.
+At one stage in the past, this used to be the auth component for Spree. If that's the feature that you're now finding lacking from Spree, that's easily fixed.
 
 Just add this line to your `Gemfile`:
 ```ruby
@@ -37,6 +37,46 @@ If you're installing this in a new Spree 1.2+ application, you'll need to instal
 and then, run this command in order to set up the admin user for the application.
 
     bundle exec rake spree_auth:admin:create
+
+## Using in an existing Rails application
+
+If you are installing Spree inside of a host application in which you want your own permission setup, you can do this using spree_auth_devise's register_ability method.
+
+First create your own CanCan Ability class following the CanCan documentation.
+
+For example: app/models/your_ability_class.rb
+
+```ruby
+class YourAbilityClass
+  include CanCan::Ability
+
+  def initialize user
+    # direct permissions
+     can :create, SomeRailsObject
+
+     # or permissions by group
+     if spree_user.has_spree_role? "admin"
+       can :create, SomeRailsAdminObject
+     end
+   end
+end
+```
+
+Then register your class in your spree initializer: config/initializers/spree.rb
+```ruby
+Spree::Ability.register_ability(YourAbilityClass)
+```
+
+Inside of your host application you can then use CanCan like you normally would.
+```ruby
+<% if can? :show SomeRailsObject %>
+
+<% end %>
+```
+
+### Adding Permissions to Gems
+
+This methodology can also be used by gems that extend spree and want/need to add permissions.
 
 ## Testing
 

@@ -2,6 +2,7 @@ require 'simplecov'
 SimpleCov.start 'rails'
 
 ENV['RAILS_ENV'] ||= 'test'
+<<<<<<< HEAD
 
 require File.expand_path('../dummy/config/environment', __FILE__)
 
@@ -50,14 +51,26 @@ RSpec.configure do |config|
   config.include Rack::Test::Methods, :type => :feature
 
   Capybara.javascript_driver = :poltergeist
-end
+=======
 
-if defined? CanCan::Ability
-  class AbilityDecorator
-    include CanCan::Ability
+require File.expand_path('../dummy/config/environment', __FILE__)
 
-    def initialize(user)
-      cannot :manage, Spree::Order
-    end
+require 'rspec/rails'
+require 'shoulda-matchers'
+require 'ffaker'
+
+RSpec.configure do |config|
+  config.infer_spec_type_from_file_location!
+  config.raise_errors_for_deprecations!
+
+  config.filter_run focus: true
+  config.run_all_when_everything_filtered = true
+  config.use_transactional_fixtures = false
+
+  config.mock_with :rspec do |mock|
+    mock.syntax = [:should, :expect]
   end
+>>>>>>> upstream/2-4-stable
 end
+
+Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require f }

@@ -1,6 +1,5 @@
-require 'spec_helper'
+RSpec.feature 'Admin Permissions', type: :feature do
 
-feature 'Admin Permissions' do
   context 'orders' do
     background do
       user = create(:admin_user, email: 'admin@person.com', password: 'password', password_confirmation: 'password')
@@ -21,6 +20,11 @@ feature 'Admin Permissions' do
       scenario 'can not edit orders' do
         create(:order, number: 'R123')
         visit spree.edit_admin_order_path('R123')
+        expect(page).to have_text 'Authorization Failure'
+      end
+
+      scenario 'can not new orders' do
+        visit spree.new_admin_order_path
         expect(page).to have_text 'Authorization Failure'
       end
     end

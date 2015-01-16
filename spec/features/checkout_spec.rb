@@ -1,6 +1,5 @@
-require 'spec_helper'
+RSpec.feature 'Checkout', :js, type: :feature do
 
-feature 'Checkout', js: true do
   given!(:country) { create(:country, name: 'United States', states_required: true) }
   given!(:state)   { create(:state, name: 'Maryland', country: country) }
   given!(:shipping_method) do
@@ -14,12 +13,11 @@ feature 'Checkout', js: true do
   given!(:address) { create(:address, state: state, country: country) }
 
   background do
-    ActionMailer::Base.default_url_options[:host] = 'http://example.com'
     @product = create(:product, name: 'RoR Mug')
     @product.master.stock_items.first.update_column(:count_on_hand, 1)
 
-    ActionMailer::Base.default_url_options[:host] = 'http://example.com'
-    Spree::Config[:enable_mail_delivery] = true
+    # Bypass gateway error on checkout | ..or stub a gateway
+    Spree::Config[:allow_checkout_on_gateway_error] = true
 
     # Bypass gateway error on checkout | ..or stub a gateway
     Spree::Config[:allow_checkout_on_gateway_error] = true
@@ -30,8 +28,8 @@ feature 'Checkout', js: true do
   context 'without payment being required' do
     background do
       # So that we don't have to setup payment methods just for the sake of it
-      Spree::Order.any_instance.stub has_available_payment: true
-      Spree::Order.any_instance.stub payment_required?: false
+      allow_any_instance_of(Spree::Order).to receive(:has_available_payment).and_return(true)
+      allow_any_instance_of(Spree::Order).to receive(:payment_required?).and_return(false)
     end
 
     scenario 'allow a visitor to checkout as guest, without registration' do
@@ -58,8 +56,6 @@ feature 'Checkout', js: true do
       check 'order_use_billing'
 
       click_button 'Save and Continue'
-      click_button 'Save and Continue'
-      # coupon code step
       click_button 'Save and Continue'
 
       expect(page).to have_text 'Your order has been processed successfully'
@@ -91,8 +87,6 @@ feature 'Checkout', js: true do
 
       click_button 'Save and Continue'
       click_button 'Save and Continue'
-      # coupon code step
-      click_button 'Save and Continue'
 
       expect(page).to have_text 'Your order has been processed successfully'
       expect(Spree::Order.first.user).to eq user
@@ -100,6 +94,7 @@ feature 'Checkout', js: true do
 
     # Regression test for #890
     scenario 'associate an incomplete guest order with user after successful password reset' do
+      create(:store)
       user = create(:user, email: 'email@person.com', password: 'password', password_confirmation: 'password')
       click_link 'RoR Mug'
       click_button 'Add To Cart'
@@ -112,7 +107,7 @@ feature 'Checkout', js: true do
       # Need to do this now because the token stored in the DB is the encrypted version
       # The 'plain-text' version is sent in the email and there's one way to get that!
       reset_password_email = ActionMailer::Base.deliveries.first
-      token_url_regex = /^http:\/\/example.com\/user\/spree_user\/password\/edit\?reset_password_token=(.*)$/
+      token_url_regex = /^http:\/\/www.example.com\/user\/spree_user\/password\/edit\?reset_password_token=(.*)$/
       token = token_url_regex.match(reset_password_email.body.to_s)[1]
 
       visit spree.edit_spree_user_password_path(reset_password_token: token)
@@ -161,8 +156,6 @@ feature 'Checkout', js: true do
       check 'order_use_billing'
 
       click_button 'Save and Continue'
-      click_button 'Save and Continue'
-      # coupon code step
       click_button 'Save and Continue'
 
       expect(page).to have_text 'Your order has been processed successfully'

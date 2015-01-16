@@ -1,10 +1,9 @@
-require 'spec_helper'
+RSpec.describe Spree::UserMailer, type: :mailer do
 
-describe Spree::UserMailer do
+  let!(:store) { create(:store) }
   let(:user) { create(:user) }
 
   before do
-    ActionMailer::Base.default_url_options[:host] = 'http://example.com'
     user = create(:user)
     Spree::UserMailer.reset_password_instructions(user, 'token goes here').deliver
     @message = ActionMailer::Base.deliveries.last
@@ -13,7 +12,7 @@ describe Spree::UserMailer do
   describe '#reset_password_instructions' do
     describe 'message contents' do
       before do
-        Spree::UserMailer.reset_password_instructions(user, 'token goes here').deliver
+        described_class.reset_password_instructions(user, 'token goes here').deliver
         @message = ActionMailer::Base.deliveries.last
       end
 
@@ -25,21 +24,21 @@ describe Spree::UserMailer do
         end
 
         it 'Spree site name' do
-          expect(@message.subject).to include Spree::Config[:site_name]
+          expect(@message.subject).to include store.name
         end
       end
 
       context 'body includes' do
         it 'password reset url' do
-          expect(@message.body.raw_source).to include 'http://example.com/user/spree_user/password/edit'
+          expect(@message.body.raw_source).to include "http://#{store.url}/user/spree_user/password/edit"
         end
       end
     end
 
     describe 'legacy support for User object' do
-      it 'send an email' do
+      it 'sends an email' do
         expect {
-          Spree::UserMailer.reset_password_instructions(user, 'token goes here').deliver
+          described_class.reset_password_instructions(user, 'token goes here').deliver
         }.to change(ActionMailer::Base.deliveries, :size).by(1)
       end
     end
