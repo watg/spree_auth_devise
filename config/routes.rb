@@ -27,7 +27,8 @@ Spree::Core::Engine.add_routes do
   get '/checkout/registration' => 'checkout#registration', :as => :checkout_registration
   put '/checkout/registration' => 'checkout#update_registration', :as => :update_checkout_registration
 
-  resource :account, :controller => 'users'
+  # The /account#show action is handled by a dedicated AccountsController in Spree Frontend
+  resource :account, :controller => 'users', except: [:show]
 
   namespace :admin do
     devise_for :spree_user,
