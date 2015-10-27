@@ -1,3 +1,4 @@
+<% levels = ["Never tried", "Beginner", "Intermediate", "Advanced" ] %>
 <p>
   <%= f.label :email, Spree.t(:email) %><br />
   <%= f.email_field :email, :class => 'title', :value => session[:login_email] %>
@@ -11,6 +12,16 @@
   <p>
     <%= f.label :password_confirmation, Spree.t(:confirm_password) %><br />
     <%= f.password_field :password_confirmation, :class => 'title' %>
+  </p>
+
+  <p>
+    <%= f.label :knitting_level, Spree.t(:describe_your_knitting_level) %><br />
+    <%= f.select(:knitting_level, levels) %>
+  </p>
+
+  <p>
+    <%= f.label :crochet_level, Spree.t(:describe_your_crochet_level) %><br />
+    <%= f.select(:crochet_level, levels) %>
   </p>
 </div>
 
