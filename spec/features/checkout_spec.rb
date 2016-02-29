@@ -1,5 +1,5 @@
 RSpec.feature 'Checkout', :js, type: :feature do
-
+  given!(:store) { create(:store) }
   given!(:country) { create(:country, name: 'United States', states_required: true) }
   given!(:state)   { create(:state, name: 'Maryland', country: country) }
   given!(:shipping_method) do
@@ -15,9 +15,6 @@ RSpec.feature 'Checkout', :js, type: :feature do
   background do
     @product = create(:product, name: 'RoR Mug')
     @product.master.stock_items.first.update_column(:count_on_hand, 1)
-
-    # Bypass gateway error on checkout | ..or stub a gateway
-    Spree::Config[:allow_checkout_on_gateway_error] = true
 
     # Bypass gateway error on checkout | ..or stub a gateway
     Spree::Config[:allow_checkout_on_gateway_error] = true
